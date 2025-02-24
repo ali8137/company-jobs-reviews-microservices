@@ -1,0 +1,82 @@
+spring.application.name=gateway
+#the above is added by itself
+
+server.port=8084
+
+
+#Eureka
+eureka.client.serviceUrl.defaultZone=http://servicereg:8761/eureka/
+# when we dockerized this project module/microservice "gateway", we have changed the above url from "http://localhost:8761/eureka/" to "http://servicereg:8761/eureka/". so that this project module/microservice "gateway" inside the docker container will be able to communicate with the docker container "servicereg"
+eureka.client.register-with-eureka=true
+# This means that the service "jobMS" will register itself with Eureka.
+eureka.client.fetch-registry=true
+# This means that the service "jobsMS" will fetch its registry from Eureka.
+#the above 3 code lines are the default values of these properties. but we added them in case we have many profiles in the project, like profile for dev, profile for prod, profile for test etc...
+
+
+# zipkin
+management.tracing.sampling.probability=1.0
+#the above means that the zipkin tracing will be enabled with a sampling probability of 1.0, which means 100% of the requests will be traced
+#in production environment, the zipkin tracing will be enabled with a lesser sampling probability like for example a sampling probability of 0.1, which means 10% of the requests will be traced. because this tracing takes time, where time in production environment is precious
+#management.zipkin.tracing.endpoint=http://localhost:9411/api/v2/spans
+##the above is to say that the zipkin tracing will be enabled with the tracing endpoint being "http://localhost:9411/api/v2/spans". but I will comment it because it has this value by default.
+
+management.zipkin.tracing.endpoint=http://zipkin:9411/api/v2/spans
+# when we dockerized this project module/microservice "gateway", we have changed the above url from the default value "http://localhost:9411/api/v2/spans" to "http://zipkin:9411/api/v2/spans". so that this project module/microservice "gateway" inside the docker container will be able to communicate with the docker container "zipkin"
+
+
+#Gateway
+spring.cloud.gateway.routes[0].id=companyms
+#spring.cloud.gateway.routes[0].uri=http://localhost:8081
+spring.cloud.gateway.routes[0].uri=http://companyms:8081
+# when we dockerized this project module/microservice "gateway", we have changed the above url from "lb://companyms" to "http://companyms:8082". so that this project module/microservice "gateway" inside the docker container will be able to communicate with the docker container "companyms"
+#the above is to say that the gateway will use the load balancer "companyms" to route the requests to any instance of the controller of the project module/microservice "companyms".
+#related to the above note: the difference between the above code line and the previous commented one is that with the previous commented one we are sure that the project module "companyms" has only one instance running on the port "8081"  , while with the above code line we may have many instances of the project module "companyms", that is the project module "jobMS" can have multiple instances running on different ports, so the load balancing service provided by spring cloud will be responsible in this case for delivering the request sent to the most suited instance of the project module "companyms".
+#in the above code line, we have to write the name of the project module "companyms" as it is specified in the service registry eureka.
+spring.cloud.gateway.routes[0].predicates[0]=Path=/companies/**
+#the above path must match the endpoint of the controller of the project module/microservice "companyMS"
+
+spring.cloud.gateway.routes[1].id=jobms
+#spring.cloud.gateway.routes[1].uri=http://localhost:8082
+spring.cloud.gateway.routes[1].uri=http://jobms:8082
+# when we dockerized this project module/microservice "gateway", we have changed the above url from "lb://jobms" to "http://jobms:8082". so that this project module/microservice "gateway" inside the docker container will be able to communicate with the docker container "jobms"
+#the above is to say that the gateway will use the load balancer "JOB-service-default" to route the requests to any instance of the controller of the project module/microservice "jobMS".
+#related to the above note: the difference between the above code line and the previous commented one is that with the previous commented one we are sure that the project module "jobMS" has only one instance running on the port "8082"  , while with the above code line we may have many instances of the project module "jobMS", that is the project module "jobMS" can have multiple instances running on different ports, so the load balancing service provided by spring cloud will be responsible in this case for delivering the request sent to the most suited instance of the project module "jobMS".
+#in the above code line, we have to write the name of the project module "jobMS" as it is specified in the service registry eureka.
+spring.cloud.gateway.routes[1].predicates[0]=Path=/jobs/**
+#the above path must match the endpoint of the controller of the project module/microservice "jobMS"
+
+spring.cloud.gateway.routes[2].id=reviewms
+#spring.cloud.gateway.routes[2].uri=http://localhost:8083
+spring.cloud.gateway.routes[2].uri=http://reviewms:8083
+# when we dockerized this project module/microservice "gateway", we have changed the above url from "lb://reviewms" to "http://reviewms:8083". so that this project module/microservice "gateway" inside the docker container will be able to communicate with the docker container "reviewms"
+#the above is to say that the gateway will use the load balancer "reviewms" to route the requests to any instance of the controller of the project module/microservice "reviewms".
+#related to the above note: the difference between the above code line and the previous commented one is that with the previous commented one we are sure that the project module "reviewms" has only one instance running on the port "8083"  , while with the above code line we may have many instances of the project module "reviewms", that is the project module "jobMS" can have multiple instances running on different ports, so the load balancing service provided by spring cloud will be responsible in this case for delivering the request sent to the most suited instance of the project module "reviewms".
+#in the above code line, we have to write the name of the project module "reviewms" as it is specified in the service registry eureka.
+spring.cloud.gateway.routes[2].predicates[0]=Path=/reviews/**
+#the above path must match the endpoint of the controller of the project module/microservice "reviewMS"
+
+
+spring.cloud.gateway.routes[3].id=eureka-server
+spring.cloud.gateway.routes[3].uri=http://servicereg:8761
+# when we dockerized this project module/microservice "gateway", we have changed the above url from "http://localhost:8761" to "http://servicereg:8761". so that this project module/microservice "gateway" inside the docker container will be able to communicate with the docker container "servicereg"
+spring.cloud.gateway.routes[3].predicates[0]=Path=/eureka/main
+spring.cloud.gateway.routes[3].filters[0]=SetPath=/
+#the above means that when we visit the url "/eureka/main", the gateway will set the path to "/", which means the root path of the url "/eureka/main", and then the request will be forwarded/redirected to the eureka server, that is url "http://localhost:8761".
+#the above will allow us to send a request to"localhost:8761/eureka/main" and api-gateway will redirect us to "http://localhost:8761". this will allow us to access eureka from api-gateway, which is good for administrating everything about our microservices application.
+
+#the above is to add the html and css files to the page shown by api-gateway when we visit the url "localhost:8084/eureka/main" where api-gateway will redirect us to "http://localhost:8761". ---------- beginning
+spring.cloud.gateway.routes[4].id=eureka-server-static
+spring.cloud.gateway.routes[4].uri=http://servicereg:8761
+# when we dockerized this project module/microservice "gateway", we have changed the above url from "http://localhost:8761" to "http://servicereg:8761". so that this project module/microservice "gateway" inside the docker container will be able to communicate with the docker container "servicereg"
+spring.cloud.gateway.routes[4].predicates[0]=Path=/eureka/**
+#the above is to add the html and css files to the page shown by api-gateway when we visit the url "localhost:8084/eureka/main" where api-gateway will redirect us to "http://localhost:8761". ---------- end
+#related to the above note: we use the above properties in case when we are trying to access "localhost:8761" from api-gateway and we get a page without css
+
+
+logging.level.root=info
+#the above means that the logging level of the root logger will be set to "info". where root is the root logger. root logger means the logger that is used to log the messages that are not associated with any specific logger.
+logging.level.org.springframework.cloud.gateway.route.RouteDefinitionLocator=INFO
+# the above means that the logging level of the logger "org.springframework.cloud.gateway.route.RouteDefinitionLocator" will be set to "info". where "org.springframework.cloud.gateway.route.RouteDefinitionLocator" logger is the logger that is used to log the messages that are associated with the logger "org.springframework.cloud.gateway.route.RouteDefinitionLocator".
+logging.level.org.springframework.cloud.gateway = TRACE
+# the above means that the logging level of the logger "org.springframework.cloud.gateway" will be set to "trace". where "org.springframework.cloud.gateway" logger is the logger that is used to log the messages that are associated with the logger "org.springframework.cloud.gateway".

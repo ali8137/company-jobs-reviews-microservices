@@ -27,16 +27,27 @@ This is a backend web application built using Spring Boot. The application allow
 ## Dependencies
 💡 **TODO:** 
 - [x] add the dependencies
-- for each of the microservices, add these dependencies:
+- for each of the microservices (company, review, job), add these dependencies:
   - Java version 17
   - Spring Boot Version 3.3.0
     - Spring Web
     - Spring Data JPA
     - PostgreSQL Driver
+    - Spring for RabbitMQ Streams
+- for the server registery service:
+  - Spring Boot Version 3.3.0
+    - Eureka Server
+- for the API gateway service:
+  - Spring Boot Version 3.3.0
+    - Reactive Gateway
+- for config server service:
+  - Config Server
+- for the Server Registry, API Gateway, Company, Review, and Job services:
+  - Java version 17
+  - Spring Boot Version 3.3.0
     - Eureka Discovery Client
     - Spring Boot Actuator
     - Zipkin
-    - Spring for RabbitMQ Streams
 
 ---
 
@@ -145,7 +156,7 @@ and the environment variables: ...
 ---
 
 ## API Documentation
-- API Base URL: http://localhost:8088/api
+- API Base URL: http://localhost:8088
 
 💡 **TODO:** 
 - [ ] add postman tests

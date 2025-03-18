@@ -171,7 +171,7 @@ and the environment variables: ...
 
 ## 📌 Authorship & License  
 
-This project was created by **[ALi Mezher](https://github.com/ali8137)**.  
+This project was created by **[Ali Mezher](https://github.com/ali8137)**.  
 If you use this project, please provide proper credit by linking back to this repository.  
 
 📜 **License:** This project is licensed under the [MIT License](LICENSE).  
